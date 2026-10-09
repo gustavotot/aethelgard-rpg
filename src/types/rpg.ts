@@ -228,6 +228,40 @@ export interface SpellItem {
   source?: SourceReference;
 }
 
+export type FeatureActionKind =
+  | 'Attack'
+  | 'Damage'
+  | 'Heal'
+  | 'Movement'
+  | 'Passive'
+  | 'Utility';
+
+export interface FeatureActionItem extends AttackItem {
+  // O que a ação FAZ (como as ações embutidas de um equipamento)
+  kind: FeatureActionKind;
+  actionType: ActionType;
+  trigger?: string;
+  target?: string;
+  duration?: string;
+  // Cura (kind Heal)
+  healDice?: string;
+  healAbility?: AbilitySelection;
+  // Movimento (kind Movement)
+  moveFt?: number;
+  // Save (para ataques/efeitos que exigem teste do alvo)
+  saveAbility?: AbilitySelection;
+  saveDC?: number; // 0 = fórmula padrão (8 + Prof + mod do atributo)
+  // Metadados de magia (spell-like)
+  school?: SpellSchool;
+  circle?: number; // 0 = truque, 1..9
+  manaCost?: number;
+  spellAbility?: AbilitySelection;
+  // Usos próprios da ação (recarga como equipamento)
+  usesMax?: number;
+  usesCurrent?: number;
+  rechargeOn?: 'Turn' | 'Combat' | 'Short Rest' | 'Long Rest' | 'None';
+}
+
 export interface EquipmentItem {
   id: string;
   name: string;
@@ -273,6 +307,21 @@ export interface FeatureTraitItem {
   actionType: ActionType;
   description: string;
   source: SourceReference;
+  // Ações embutidas (como um equipamento que gera ataques)
+  actions?: FeatureActionItem[];
+  // Metadados de magia (spell-like) — usados para o editor estilo magia
+  level?: number; // 0 = truque/cantrip (passiva), 1..9
+  school?: SpellSchool;
+  range?: string;
+  castingTime?: string;
+  target?: string;
+  duration?: string;
+  components?: { v: boolean; s: boolean; m: boolean };
+  concentration?: boolean;
+  alwaysPrepared?: boolean;
+  activeToggle?: boolean;
+  manaCost?: number;
+  spellAbility?: AbilitySelection;
   // Advanced Editor capabilities
   advanced?: {
     modifiers: StatModifier[];
@@ -476,7 +525,11 @@ export interface CompendiumRealm {
   atributo?: string;
   citacao?: string;
   fonte?: { nome: string; desc: string };
-  passiva?: { nome: string; desc: string };
+  passiva?: {
+    nome: string;
+    desc: string;
+    actions?: Omit<FeatureActionItem, 'id'>[];
+  };
   vantagens?: string[];
   corrupcao?: string;
   reflexo?: string;
@@ -495,6 +548,7 @@ export interface RealmTalent {
   nome: string;
   desc: string;
   revisao?: boolean;
+  actions?: Omit<FeatureActionItem, 'id'>[];
 }
 
 export interface RealmArchetype {

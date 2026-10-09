@@ -1,4 +1,4 @@
-import { RealmTalent } from '../types/rpg';
+import { FeatureActionItem, RealmTalent } from '../types/rpg';
 
 /**
  * Talentos de Reino por Arquétipo (Nv 3 / 6 / 9 / 12 / 16).
@@ -6,10 +6,8 @@ import { RealmTalent } from '../types/rpg';
  * `Guerreiro.md` e `Creator.md`.
  * A passiva do reino (Nv 1) fica em `realm.passiva`.
  */
-export interface RealmTierEntry {
-  nivel: number;
-  nome: string;
-  desc: string;
+export interface RealmTierEntry extends RealmTalent {
+  actions?: Omit<FeatureActionItem, 'id'>[];
 }
 
 export const REALM_TALENTS: Record<string, Record<string, RealmTierEntry[]>> = {
@@ -364,11 +362,130 @@ export const REALM_TALENTS: Record<string, Record<string, RealmTierEntry[]>> = {
   // ============================= GUERREIRO =============================
   guerreiro: {
     havendor: [
-      { nivel: 3, nome: 'Golpe Radiante', desc: '1x/turno, gasta 2 Mana → ataque causa +1d6 de dano radiante.' },
-      { nivel: 6, nome: 'Escudo da Fé', desc: 'Reação: aliado a 3m sofre dano de um ataque → recebe metade do dano.' },
-      { nivel: 9, nome: 'Lâmina do Juízo', desc: 'Seus ataques ignoram resistência a dano radiante e causam +1d6 radiante contra caóticos.' },
-      { nivel: 12, nome: 'Aura de Convicção', desc: 'Aliados a 6m não podem ser amedrontados e têm +2 em resistências mentais.' },
-      { nivel: 16, nome: 'Julgamento Final', desc: '1x/dia, Ação: 4d10 de dano radiante em uma criatura caótica (CD = 8 + Prof + SAB).' },
+      {
+        nivel: 3,
+        nome: 'Golpe Radiante',
+        desc: '1x/turno, gasta 2 Mana → ataque causa +1d6 de dano radiante.',
+        actions: [
+          {
+            kind: 'Attack',
+            name: 'Golpe Radiante',
+            actionType: 'Action',
+            type: 'Melee',
+            range: 'Corpo a corpo',
+            ability: 'STR',
+            bonus: 0,
+            proficiency: 'Proficient',
+            damage1: { dice: '1d6', ability: 'None', type: 'Radiant' },
+            description:
+              '1x/turno, gasta 2 Mana: o ataque causa +1d6 de dano radiante.',
+            school: 'Evocation',
+            circle: 1,
+            manaCost: 2,
+            usesMax: 1,
+            usesCurrent: 1,
+            rechargeOn: 'Turn',
+          },
+        ],
+      },
+      {
+        nivel: 6,
+        nome: 'Escudo da Fé',
+        desc: 'Reação: aliado a 3m sofre dano de um ataque → recebe metade do dano.',
+        actions: [
+          {
+            kind: 'Utility',
+            name: 'Escudo da Fé',
+            actionType: 'Reaction',
+            type: 'Melee',
+            range: '3m',
+            ability: 'None',
+            bonus: 0,
+            proficiency: 'None',
+            damage1: { dice: '', ability: 'None', type: '' },
+            description:
+              'Reação: quando um aliado a 3m é alvo de um ataque, ele recebe metade do dano.',
+            target: 'Aliado a 3m',
+            school: 'Abjuration',
+            circle: 2,
+            usesMax: 1,
+            usesCurrent: 1,
+            rechargeOn: 'Combat',
+          },
+        ],
+      },
+      {
+        nivel: 9,
+        nome: 'Lâmina do Juízo',
+        desc: 'Seus ataques ignoram resistência a dano radiante e causam +1d6 radiante contra caóticos.',
+        actions: [
+          {
+            kind: 'Passive',
+            name: 'Lâmina do Juízo',
+            actionType: 'Passive',
+            type: 'Melee',
+            range: 'Corpo a corpo',
+            ability: 'None',
+            bonus: 0,
+            proficiency: 'None',
+            damage1: { dice: '1d6', ability: 'None', type: 'Radiant' },
+            description:
+              'Seus ataques ignoram resistência a dano radiante e causam +1d6 de dano radiante contra criaturas caóticas.',
+            school: 'Evocation',
+            circle: 3,
+          },
+        ],
+      },
+      {
+        nivel: 12,
+        nome: 'Aura de Convicção',
+        desc: 'Aliados a 6m não podem ser amedrontados e têm +2 em resistências mentais.',
+        actions: [
+          {
+            kind: 'Utility',
+            name: 'Aura de Convicção',
+            actionType: 'Passive',
+            type: 'Melee',
+            range: '6m',
+            ability: 'None',
+            bonus: 0,
+            proficiency: 'None',
+            damage1: { dice: '', ability: 'None', type: '' },
+            description:
+              'Aliados a 6m não podem ser amedrontados e têm +2 em resistências mentais.',
+            target: 'Aliados a 6m',
+            school: 'Abjuration',
+            circle: 4,
+          },
+        ],
+      },
+      {
+        nivel: 16,
+        nome: 'Julgamento Final',
+        desc: '1x/dia, Ação: 4d10 de dano radiante em uma criatura caótica (CD = 8 + Prof + SAB).',
+        actions: [
+          {
+            kind: 'Damage',
+            name: 'Julgamento Final',
+            actionType: 'Action',
+            type: 'Spell Save',
+            range: '9m',
+            ability: 'None',
+            bonus: 0,
+            proficiency: 'None',
+            damage1: { dice: '4d10', ability: 'None', type: 'Radiant' },
+            description:
+              '1x/dia, Ação: 4d10 de dano radiante em uma criatura caótica (CD = 8 + Prof + SAB).',
+            saveAbility: 'WIS',
+            saveDC: 0,
+            school: 'Evocation',
+            circle: 5,
+            usesMax: 1,
+            usesCurrent: 1,
+            rechargeOn: 'Long Rest',
+          },
+        ],
+      },
     ],
     aurivelle: [
       { nivel: 3, nome: 'Golpe Cênico', desc: 'Gasta 2 Mana → ataque causa +1d8 de dano psíquico e o alvo tem desvantagem no próximo ataque.' },

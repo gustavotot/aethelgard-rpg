@@ -299,7 +299,19 @@ export function getAllCombatAttacks(sheet: CharacterSheetState): AttackItem[] {
       }
     }
   }
-  return [...fromEquipment, ...sheet.standaloneAttacks];
+  // Ações embutidas de features (talentos/passivas do reino), como magias/equipamentos
+  const fromFeatures: AttackItem[] = [];
+  for (const f of sheet.features) {
+    for (const a of f.actions || []) {
+      if (a.kind === 'Attack' || (a.kind === 'Damage' && a.damage1?.dice)) {
+        fromFeatures.push({
+          ...a,
+          source: { type: 'Feature', id: f.id, name: f.name },
+        });
+      }
+    }
+  }
+  return [...fromEquipment, ...fromFeatures, ...sheet.standaloneAttacks];
 }
 
 export function calculateAttackStats(
@@ -488,15 +500,30 @@ export function synchronizeOrigins(
     realmArchetype.talentos
       .filter((t) => t.nivel <= next.level)
       .forEach((t, idx) => {
+        const acts = (t.actions || []).map((a, i) => ({
+          ...a,
+          id: `auto-action-realm-talent-${realm.id}-${baseArchetypeId}-${t.nivel}-${i}`,
+        }));
+        const firstAct = acts[0];
         derivedFeatures.push({
           name: `Nv ${t.nivel} · ${t.nome}${t.revisao ? ' (em revisão)' : ''}`,
           category: 'Realm Talents',
-          actionType: 'Passive',
+          actionType: firstAct?.actionType ?? 'Passive',
           description:
             t.desc +
             (t.revisao ? ' — Marcado como pendente de revisão de conteúdo.' : ''),
           source: { type: 'Realm', id: realm.id, name: realm.name },
           id: `auto-feat-realm-talent-${realm.id}-${baseArchetypeId}-${t.nivel}`,
+          actions: acts.length ? acts : undefined,
+          advanced:
+            firstAct && firstAct.usesMax && firstAct.usesMax > 0
+              ? {
+                  modifiers: [],
+                  usesMax: firstAct.usesMax,
+                  usesCurrent: firstAct.usesMax,
+                  rechargeOn: firstAct.rechargeOn ?? 'None',
+                }
+              : undefined,
         });
       });
   }

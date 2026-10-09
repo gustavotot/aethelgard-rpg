@@ -1,5 +1,6 @@
 import {
   CompendiumRealm,
+  FeatureActionItem,
   RealmArchetype,
   SpellSchool,
 } from '../types/rpg';
@@ -57,7 +58,11 @@ interface RealmSeed {
   cultura: string;
   lore: string;
   fonte: { nome: string; desc: string };
-  passiva: { nome: string; desc: string };
+  passiva: {
+    nome: string;
+    desc: string;
+    actions?: Omit<FeatureActionItem, 'id'>[];
+  };
   vantagens: string[];
   corrupcao?: string;
   reflexo?: string;
@@ -79,7 +84,42 @@ const SEEDS: RealmSeed[] = [
     cultura: 'Uma civilização de cavaleiros e construtores que acredita na proteção dos fracos. Suas cidades flutuam sobre as nuvens, sustentadas por uma energia radiante que poucos compreendem.',
     lore: 'Dizem que o primeiro fragmento caiu aqui, incrustando-se no coração da montanha mais alta. Os havendorianos não adoram o fragmento — eles o estudam, pois acreditam que compreendê-lo é compreender a si mesmos. Sua sociedade é estratificada em ordens: os Portadores da Aurora (cavaleiros), os Forjadores de Luz (artesãos) e os Sussurradores (estudiosos).',
     fonte: { nome: 'Radiância', desc: 'Energia divina viva usada para cura, proteção, purificação e dano sagrado. Forte contra criaturas do Caos, corrupção e magia sombria.' },
-    passiva: { nome: 'Radiância Viva', desc: 'Dano extra contra caóticos e leve resistência à corrupção durante combate. Canaliza Radiância em ataques, defesa e suporte — efeitos sagrados aprimorados.' },
+    passiva: {
+      nome: 'Radiância Viva',
+      desc: 'Dano extra contra caóticos e leve resistência à corrupção durante combate. Canaliza Radiância em ataques, defesa e suporte — efeitos sagrados aprimorados.',
+      actions: [
+        {
+          kind: 'Damage',
+          name: 'Canalizar Radiância',
+          actionType: 'Action',
+          type: 'Melee',
+          range: 'Corpo a corpo',
+          ability: 'None',
+          bonus: 0,
+          proficiency: 'None',
+          damage1: { dice: '1d6', ability: 'None', type: 'Radiant' },
+          description:
+            '1x por combate: canaliza a Radiância em um ataque contra uma criatura caótica, adicionando 1d6 de dano radiante.',
+          usesMax: 1,
+          usesCurrent: 1,
+          rechargeOn: 'Combat',
+        },
+        {
+          kind: 'Utility',
+          name: 'Aura Radiante',
+          actionType: 'Passive',
+          type: 'Melee',
+          range: 'Pessoal',
+          ability: 'None',
+          bonus: 0,
+          proficiency: 'None',
+          damage1: { dice: '', ability: 'None', type: 'Radiant' },
+          description:
+            'Resistência leve à corrupção e efeitos sagrados aprimorados enquanto a passiva está ativa.',
+          duration: '1 combate',
+        },
+      ],
+    },
     vantagens: ['Afinidade Radiante: usa Radiância independentemente do arquétipo', 'Purificação: resistência a maldições, corrupção, medo e magia caótica', 'Bênção do Núcleo: regeneração, cura e recuperação de mana ampliadas em locais sagrados', 'Luz Ofensiva: ataques radiantes causam dano ampliado em criaturas do Caos'],
     racas: [{ id: 'heavens', nome: 'Heavens', stats: '+2 SAB, +1 CAR', desc: 'Humanoides de linhagem divina, olhos luminosos e marcas douradas.', traits: ['Olhos do Juízo: percebe Caos e corrupção a 18m', 'Regeneração Divina: recupera 1 PV por turno abaixo da metade dos PV', 'Resistência a dano de corrupção e magia caótica', 'Fraqueza: dano caótico causa +1 dado; brilho dá desvantagem em Furtividade'] }],
     arquetipos: [
@@ -458,10 +498,14 @@ function buildRealmTraits(seed: RealmSeed): CompendiumRealm['traits'] {
   const traits: CompendiumRealm['traits'] = [
     {
       name: seed.passiva.nome,
-      category: 'Others',
-      actionType: 'Passive',
+      category: 'Realm Talents',
+      actionType: seed.passiva.actions?.[0]?.actionType ?? 'Passive',
       description: seed.passiva.desc,
       source: { type: 'Realm', id: seed.id, name: seed.name },
+      actions: (seed.passiva.actions || []).map((a, idx) => ({
+        ...a,
+        id: `auto-action-realm-passiva-${seed.id}-${idx}`,
+      })),
     },
   ];
   if (seed.vantagens.length) {

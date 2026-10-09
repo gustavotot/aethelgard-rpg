@@ -44,8 +44,73 @@ import {
 } from '../data/equipmentLibrary';
 import { libraryItemToEquipment } from '../utils/characterFactory';
 import { COMPENDIUM_ARCHETYPES, resolveArchetypeBase } from '../data/archetypes';
-import { CharacterSheetState } from '../types/rpg';
+import { CharacterSheetState, FeatureActionItem } from '../types/rpg';
 import { synchronizeOrigins } from '../utils/calculations';
+
+function ActionChips({
+  actions,
+}: {
+  actions?: Array<Omit<FeatureActionItem, 'id'> | FeatureActionItem>;
+}) {
+  if (!actions || actions.length === 0) return null;
+  return (
+    <div className="pt-1.5 flex flex-col gap-1">
+      {actions.map((a, idx) => {
+        const kindLabel =
+          a.kind === 'Attack'
+            ? 'Ataque'
+            : a.kind === 'Damage'
+            ? 'Dano'
+            : a.kind === 'Heal'
+            ? 'Cura'
+            : a.kind === 'Movement'
+            ? 'Movimento'
+            : a.kind === 'Utility'
+            ? 'Suporte'
+            : 'Passiva';
+        const chips: string[] = [kindLabel];
+        if (a.actionType && a.actionType !== 'Passive')
+          chips.push(a.actionType);
+        if (a.range) chips.push(`Alcance ${a.range}`);
+        if (a.manaCost) chips.push(`${a.manaCost} Mana`);
+        if (a.school) chips.push(a.school);
+        if (a.damage1?.dice)
+          chips.push(`${a.damage1.dice} ${a.damage1.type || ''}`);
+        if (a.healDice) chips.push(`Cura ${a.healDice}`);
+        return (
+          <div
+            key={`${idx}-${a.name}`}
+            className="flex items-center gap-1.5 flex-wrap"
+          >
+            {chips.map((c) => (
+              <span
+                key={c}
+                className="px-1.5 py-0.5 rounded bg-[#232229] text-[9px] text-[#d4d0c8]"
+              >
+                {c}
+              </span>
+            ))}
+            {a.usesMax && a.usesMax > 0 ? (
+              <span className="px-1.5 py-0.5 rounded bg-[#2a1522] text-[9px] text-[#f2a2c0]">
+                {a.usesMax}x uso{a.usesMax > 1 ? 's' : ''}
+              </span>
+            ) : null}
+            {a.saveAbility && a.saveAbility !== 'None' ? (
+              <span className="px-1.5 py-0.5 rounded bg-[#232229] text-[9px] text-[#f0cd7e]">
+                Save {a.saveAbility}
+              </span>
+            ) : null}
+            {a.moveFt ? (
+              <span className="px-1.5 py-0.5 rounded bg-[#232229] text-[9px] text-[#8c877e]">
+                Movimento {a.moveFt}m
+              </span>
+            ) : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 interface CompendiumViewProps {
   sheet: CharacterSheetState;
@@ -477,6 +542,7 @@ export const CompendiumView: React.FC<CompendiumViewProps> = ({
                           <p className="text-[#9e9a91] mt-0.5">
                             {r.passiva.desc}
                           </p>
+                          <ActionChips actions={r.passiva.actions as FeatureActionItem[]} />
                         </div>
                       )}
                       {arc.talentos.map((t) => {
@@ -508,6 +574,7 @@ export const CompendiumView: React.FC<CompendiumViewProps> = ({
                               )}
                             </span>
                             <p className="text-[#9e9a91] mt-1">{t.desc}</p>
+                            <ActionChips actions={t.actions as FeatureActionItem[]} />
                           </div>
                         );
                       })}
@@ -646,6 +713,9 @@ export const CompendiumView: React.FC<CompendiumViewProps> = ({
                       {passivaExpanded && (
                         <div className="mt-2 space-y-2 text-xs">
                           <p className="text-[#9e9a91]">{realm.lore}</p>
+                          <ActionChips
+                            actions={realm.passiva.actions as FeatureActionItem[]}
+                          />
                           {realm.traits.map((t, i) => (
                             <div
                               key={i}
