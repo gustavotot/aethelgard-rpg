@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+  BookOpen,
   Dices,
   Plus,
   Scroll,
@@ -583,13 +584,26 @@ export default function App() {
             <span>Log ({rollLogs.length})</span>
           </button>
 
-          <button
+<button
             type="button"
-            onClick={handleAddElara}
+            onClick={() => handleAddElara}
             title="Adicionar a ficha padrão da Elara ao roster"
             className="p-1.5 rounded border border-[#2c2a27] bg-[#16161b] text-[#8c877e] hover:text-[#e5c172] cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (!activeSheet) return;
+              setCompendiumTarget({ tab: 'realms', id: activeSheet.realmId || 'havendor' });
+              setActiveView('compendium');
+            }}
+            title="Abrir Reinos & Compêndio"
+            className="p-1.5 rounded border border-[#2c2a27] bg-[#16161b] text-[#8c877e] hover:text-[#e5c172] cursor-pointer md:hidden"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span className="text-[10px]">Reinos</span>
           </button>
         </div>
       </header>
