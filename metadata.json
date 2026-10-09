@@ -1,0 +1,6 @@
+{
+  "name": "Aethelgard RPG — Ficha de Personagem & Compêndio",
+  "description": "Ficha de personagem modular, interativa e automatizada com Compêndio integrado de Espécies, Reinos (Revendor), Classes e Magias.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
