@@ -529,30 +529,6 @@ export default function App() {
         <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             type="button"
-            onClick={() => {
-              if (activeView === 'roster') {
-                if (activeSheet) setActiveView('sheet');
-              } else {
-                setActiveView('roster');
-              }
-            }}
-            className="md:hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded border border-[#5c4b2b] bg-[#1a1814] text-[#e5c172] text-xs font-medium whitespace-nowrap cursor-pointer"
-          >
-            {activeView === 'roster' ? (
-              <>
-                <Scroll className="w-3.5 h-3.5" />
-                <span>Ficha</span>
-              </>
-            ) : (
-              <>
-                <Users className="w-3.5 h-3.5" />
-                <span>Fichas</span>
-              </>
-            )}
-          </button>
-
-          <button
-            type="button"
             onClick={() => setMobileFramePreview((p) => !p)}
             title="Alternar entre visualização Compacta e Expandida"
             className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded border border-[#32302c] bg-[#16161b] hover:border-[#6e5931] text-xs text-[#b8b4ac] hover:text-white whitespace-nowrap cursor-pointer"
@@ -574,7 +550,7 @@ export default function App() {
           <button
             type="button"
             onClick={() => setLogModalOpen(true)}
-            className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded border text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
+            className={`hidden md:inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded border text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
               logModalOpen || rollLogs.length > 0
                 ? 'border-[#c8a357] bg-[#241e12] text-[#f5d98e]'
                 : 'border-[#3a3835] bg-[#16161b] text-[#d4d0c8] hover:border-[#786137]'
@@ -584,7 +560,7 @@ export default function App() {
             <span>Log ({rollLogs.length})</span>
           </button>
 
-<button
+          <button
             type="button"
             onClick={() => handleAddElara}
             title="Adicionar a ficha padrão da Elara ao roster"
@@ -592,6 +568,40 @@ export default function App() {
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
+        </div>
+      </header>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0e0e12]/98 border-t border-[#252320] backdrop-blur-md pb-safe">
+        <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
+          <button
+            type="button"
+            onClick={() => setActiveView('roster')}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-md text-xs font-medium transition-colors ${
+              activeView === 'roster' || activeView === 'creator'
+                ? 'text-[#f0cd7e] bg-[#1a1814]'
+                : 'text-[#b8b4ac] hover:text-white'
+            }`}
+          >
+            <Users className="w-5 h-5" />
+            <span>Fichas</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!activeSheet) return;
+              setActiveView('sheet');
+            }}
+            disabled={!activeSheet}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-md text-xs font-medium transition-colors disabled:opacity-40 ${
+              activeView === 'sheet' && activeSheet ? 'text-[#f0cd7e] bg-[#1a1814]' : 'text-[#b8b4ac] hover:text-white'
+            }`}
+          >
+            <Scroll className="w-5 h-5" />
+            <span>Ficha</span>
+          </button>
+
           <button
             type="button"
             onClick={() => {
@@ -599,17 +609,30 @@ export default function App() {
               setCompendiumTarget({ tab: 'realms', id: activeSheet.realmId || 'havendor' });
               setActiveView('compendium');
             }}
-            title="Abrir Reinos & Compêndio"
-            className="p-1.5 rounded border border-[#2c2a27] bg-[#16161b] text-[#8c877e] hover:text-[#e5c172] cursor-pointer md:hidden"
+            disabled={!activeSheet}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-md text-xs font-medium transition-colors disabled:opacity-40 ${
+              activeView === 'compendium' ? 'text-[#f0cd7e] bg-[#1a1814]' : 'text-[#b8b4ac] hover:text-white'
+            }`}
           >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span className="text-[10px]">Reinos</span>
+            <BookOpen className="w-5 h-5" />
+            <span>Reinos</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setLogModalOpen(true)}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-md text-xs font-medium transition-colors ${
+              logModalOpen || rollLogs.length > 0 ? 'text-[#f5d98e] bg-[#241e12]' : 'text-[#b8b4ac] hover:text-white'
+            }`}
+          >
+            <Dices className="w-5 h-5 text-[#c8a357]" />
+            <span>Log ({rollLogs.length})</span>
           </button>
         </div>
-      </header>
+      </nav>
 
       {/* Main Content Container */}
-      <main className="flex-1 w-full max-w-[1100px] mx-auto px-2.5 sm:px-6 py-4 sm:py-5">
+      <main className="flex-1 w-full max-w-[1100px] mx-auto px-2.5 sm:px-6 py-4 sm:py-5 md:pb-4 pb-20">
         {activeView === 'creator' ? (
           <CharacterCreator
             onCreate={handleCreateCharacter}
