@@ -348,6 +348,7 @@ export const INITIAL_ELARA_CHARACTER: CharacterSheetState = {
   immunities: '',
   conditionImmunities: '',
   activeConditions: [],
+  conditionTurns: {},
   darkvisionFt: 0,
   abilities: {
     STR: { baseScore: 8, saveProficiency: 'None' },

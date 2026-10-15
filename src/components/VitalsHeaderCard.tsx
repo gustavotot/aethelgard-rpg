@@ -13,6 +13,7 @@ import {
   Skull,
   Clock,
   ShieldPlus,
+  X,
 } from 'lucide-react';
 import {
   AbilityKey,
@@ -31,7 +32,7 @@ import {
   COMPENDIUM_SPECIES,
 } from '../data/compendium';
 import { getArchetypeById, resolveArchetypeBase } from '../data/archetypes';
-import { CONDITIONS_LIST } from '../data/constants';
+import { CONDITIONS_LIST, conditionLabel } from '../data/constants';
 
 function FormulaTip({ text }: { text: string }) {
   return (
@@ -299,11 +300,47 @@ export const VitalsHeaderCard: React.FC<VitalsHeaderCardProps> = ({
   const toggleCondition = (cond: string) => {
     onUpdateSheet((prev) => {
       const exists = prev.activeConditions.includes(cond);
+      if (exists) {
+        const nextTurns = { ...(prev.conditionTurns ?? {}) };
+        delete nextTurns[cond];
+        return {
+          ...prev,
+          activeConditions: prev.activeConditions.filter((c) => c !== cond),
+          conditionTurns: nextTurns,
+        };
+      }
       return {
         ...prev,
-        activeConditions: exists
-          ? prev.activeConditions.filter((c) => c !== cond)
-          : [...prev.activeConditions, cond],
+        activeConditions: [...prev.activeConditions, cond],
+      };
+    });
+  };
+
+  const setConditionTurns = (cond: string, value: number) => {
+    onUpdateSheet((prev) => ({
+      ...prev,
+      conditionTurns: {
+        ...(prev.conditionTurns ?? {}),
+        [cond]: Math.max(0, value),
+      },
+    }));
+  };
+
+  const tickCondition = (cond: string) => {
+    onUpdateSheet((prev) => {
+      const current = (prev.conditionTurns ?? {})[cond] ?? 0;
+      if (current > 1) {
+        return {
+          ...prev,
+          conditionTurns: { ...(prev.conditionTurns ?? {}), [cond]: current - 1 },
+        };
+      }
+      const nextTurns = { ...(prev.conditionTurns ?? {}) };
+      delete nextTurns[cond];
+      return {
+        ...prev,
+        activeConditions: prev.activeConditions.filter((c) => c !== cond),
+        conditionTurns: nextTurns,
       };
     });
   };
@@ -547,6 +584,37 @@ export const VitalsHeaderCard: React.FC<VitalsHeaderCardProps> = ({
                 className="w-full px-2 py-1 rounded bg-[#141418] border border-[#33312e] font-mono-num text-white"
               />
             </div>
+          </div>
+        )}
+
+        {/* Active Conditions Badge Strip (only when there is at least one) */}
+        {sheet.activeConditions.length > 0 && (
+          <div className="mb-2.5 flex flex-wrap items-center gap-1.5 rounded border border-[#5c1d1d] bg-[#1a0a0a] px-2.5 py-1.5">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#fca5a5]">
+              <Skull className="w-3.5 h-3.5" />
+              Status:
+            </span>
+            {sheet.activeConditions.map((cond) => {
+              const remaining = (sheet.conditionTurns ?? {})[cond] ?? 0;
+              return (
+                <button
+                  key={cond}
+                  type="button"
+                  onClick={() => toggleCondition(cond)}
+                  title={`Remover ${conditionLabel(cond)}`}
+                  className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-[#ef4444] bg-[#7c1d1d] text-white text-[11px] font-medium hover:bg-[#9f1f1f] transition-colors cursor-pointer"
+                >
+                  <span>{conditionLabel(cond)}</span>
+                  {remaining > 0 && (
+                    <span className="inline-flex items-center gap-0.5 text-[10px] text-[#fde047] font-mono-num font-bold">
+                      <Clock className="w-2.5 h-2.5" />
+                      {remaining}t
+                    </span>
+                  )}
+                  <X className="w-3 h-3 opacity-70" />
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -1216,13 +1284,15 @@ export const VitalsHeaderCard: React.FC<VitalsHeaderCardProps> = ({
                   className="w-full flex items-center justify-between text-xs font-semibold text-[#c4AA78] cursor-pointer"
                 >
                   <span>
-                    Conditions:{' '}
+                    Status:{' '}
                     {sheet.activeConditions.length > 0 ? (
                       <span className="text-[#f87171] font-medium">
-                        {sheet.activeConditions.join(', ')}
+                        {sheet.activeConditions
+                          .map((c) => conditionLabel(c))
+                          .join(', ')}
                       </span>
                     ) : (
-                      <span className="text-[#8c877e] font-normal">None</span>
+                      <span className="text-[#8c877e] font-normal">Nenhum</span>
                     )}
                   </span>
                   {conditionsOpen ? (
@@ -1233,24 +1303,85 @@ export const VitalsHeaderCard: React.FC<VitalsHeaderCardProps> = ({
                 </button>
 
                 {conditionsOpen && (
-                  <div className="mt-2.5 flex flex-wrap gap-1.5">
-                    {CONDITIONS_LIST.map((cond) => {
-                      const active = sheet.activeConditions.includes(cond);
-                      return (
-                        <button
-                          key={cond}
-                          type="button"
-                          onClick={() => toggleCondition(cond)}
-                          className={`px-2 py-1 rounded text-[11px] font-medium border transition-colors cursor-pointer ${
-                            active
-                              ? 'bg-[#7c1d1d] border-[#ef4444] text-white'
-                              : 'bg-[#08080a] border-[#2e2c29] text-[#9e9a91] hover:text-white'
-                          }`}
-                        >
-                          {cond}
-                        </button>
-                      );
-                    })}
+                  <div className="mt-2.5 flex flex-col gap-2.5">
+                    {/* Active conditions with turn counters */}
+                    {sheet.activeConditions.length > 0 && (
+                      <div className="flex flex-col gap-1.5">
+                        {sheet.activeConditions.map((cond) => {
+                          const remaining = (sheet.conditionTurns ?? {})[cond] ?? 0;
+                          return (
+                            <div
+                              key={cond}
+                              className="flex items-center gap-1.5 rounded border border-[#5c1d1d] bg-[#180a0a] px-2 py-1"
+                            >
+                              <span className="text-[11px] font-semibold text-[#fca5a5] flex-1">
+                                {conditionLabel(cond)}
+                              </span>
+                              <div
+                                className="flex items-center rounded border border-[#ef4444]/40 bg-[#0f0606] px-1 py-0.5"
+                                title="Duração em turnos (0 = indefinido)"
+                              >
+                                <Clock className="w-3 h-3 text-[#fca5a5] mr-1 shrink-0" />
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={remaining}
+                                  onChange={(e) =>
+                                    setConditionTurns(
+                                      cond,
+                                      parseInt(e.target.value, 10) || 0
+                                    )
+                                  }
+                                  aria-label={`Turnos restantes de ${conditionLabel(cond)}`}
+                                  className="w-7 text-center bg-transparent font-mono-num font-bold text-[11px] text-[#fde047] focus:outline-none"
+                                />
+                                <span className="text-[10px] text-[#fca5a5]">t</span>
+                              </div>
+                              {remaining > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => tickCondition(cond)}
+                                  title="Passar 1 turno"
+                                  className="px-1.5 py-0.5 rounded bg-[#7f1d1d] hover:bg-[#991b1b] text-white font-mono-num text-[10px] font-bold cursor-pointer"
+                                >
+                                  -1t
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => toggleCondition(cond)}
+                                title="Remover"
+                                className="p-0.5 text-[#fca5a5] hover:text-white cursor-pointer"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* All conditions toggle grid */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {CONDITIONS_LIST.map((cond) => {
+                        const active = sheet.activeConditions.includes(cond);
+                        return (
+                          <button
+                            key={cond}
+                            type="button"
+                            onClick={() => toggleCondition(cond)}
+                            title={cond}
+                            className={`px-2 py-1 rounded text-[11px] font-medium border transition-colors cursor-pointer ${
+                              active
+                                ? 'bg-[#7c1d1d] border-[#ef4444] text-white'
+                                : 'bg-[#08080a] border-[#2e2c29] text-[#9e9a91] hover:text-white'
+                            }`}
+                          >
+                            {conditionLabel(cond)}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

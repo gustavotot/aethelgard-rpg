@@ -4,6 +4,7 @@ import {
   Dices,
   Plus,
   Scroll,
+  Skull,
   Smartphone,
   Monitor,
   Users,
@@ -581,7 +582,7 @@ export default function App() {
 
       {/* Mobile Bottom Nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0e0e12]/98 border-t border-[#252320] backdrop-blur-md pb-safe">
-        <div className="grid grid-cols-4 gap-1 px-2 py-1.5">
+        <div className="grid grid-cols-5 gap-1 px-2 py-1.5">
           <button
             type="button"
             onClick={() => setActiveView('roster')}
@@ -600,14 +601,35 @@ export default function App() {
             onClick={() => {
               if (!activeSheet) return;
               setActiveView('sheet');
+              if (activeSection === 'conditions') setActiveSection('abilities');
             }}
             disabled={!activeSheet}
             className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-md text-xs font-medium transition-colors disabled:opacity-40 ${
-              activeView === 'sheet' && activeSheet ? 'text-[#f0cd7e] bg-[#1a1814]' : 'text-[#b8b4ac] hover:text-white'
+              activeView === 'sheet' && activeSheet && activeSection !== 'conditions'
+                ? 'text-[#f0cd7e] bg-[#1a1814]'
+                : 'text-[#b8b4ac] hover:text-white'
             }`}
           >
             <Scroll className="w-5 h-5" />
             <span>Ficha</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!activeSheet) return;
+              setActiveView('sheet');
+              setActiveSection('conditions');
+            }}
+            disabled={!activeSheet}
+            className={`flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-md text-xs font-medium transition-colors disabled:opacity-40 ${
+              activeView === 'sheet' && activeSheet && activeSection === 'conditions'
+                ? 'text-[#f0cd7e] bg-[#1a1814]'
+                : 'text-[#b8b4ac] hover:text-white'
+            }`}
+          >
+            <Skull className="w-5 h-5" />
+            <span>Status</span>
           </button>
 
           <button

@@ -440,6 +440,8 @@ export interface CharacterSheetState {
   immunities: string;
   conditionImmunities: string;
   activeConditions: string[];
+  // Turnos restantes por condição ativa (ausente/0 = indefinido)
+  conditionTurns?: Record<string, number>;
   darkvisionFt: number;
   // Core Stats
   abilities: Record<AbilityKey, AbilityState>;

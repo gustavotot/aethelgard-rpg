@@ -271,3 +271,24 @@ export const CONDITIONS_LIST: string[] = [
   'Stunned',
   'Unconscious',
 ];
+
+export const CONDITION_LABELS_PT: Record<string, string> = {
+  Blinded: 'Cego',
+  Charmed: 'Enfeitiçado',
+  Deafened: 'Surdo',
+  Exhaustion: 'Exaustão',
+  Frightened: 'Amedrontado',
+  Grappled: 'Agarrado',
+  Incapacitated: 'Incapacitado',
+  Invisible: 'Invisível',
+  Paralyzed: 'Paralisado',
+  Petrified: 'Petrificado',
+  Poisoned: 'Envenenado',
+  Prone: 'Deitado',
+  Restrained: 'Imobilizado',
+  Stunned: 'Atordoado',
+  Unconscious: 'Inconsciente',
+};
+
+export const conditionLabel = (cond: string): string =>
+  CONDITION_LABELS_PT[cond] ?? cond;

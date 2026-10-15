@@ -159,6 +159,7 @@ export function buildCharacterSheet(
     immunities: '',
     conditionImmunities: '',
     activeConditions: [],
+    conditionTurns: {},
     darkvisionFt: 0,
     abilities,
     skills: {
