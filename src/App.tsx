@@ -28,6 +28,7 @@ import {
 } from './utils/calculations';
 import { VitalsHeaderCard } from './components/VitalsHeaderCard';
 import { SectionSwitcherBar } from './components/SectionSwitcherModal';
+import ConditionsSection from './components/ConditionsSection';
 import {
   AbilitiesSection,
   SkillsAndToolsSection,
@@ -453,6 +454,13 @@ export default function App() {
       case 'proficiencies':
         return (
           <ProficienciesSection
+            sheet={computedSheet}
+            onUpdateSheet={handleUpdateSheet}
+          />
+        );
+      case 'conditions':
+        return (
+          <ConditionsSection
             sheet={computedSheet}
             onUpdateSheet={handleUpdateSheet}
           />

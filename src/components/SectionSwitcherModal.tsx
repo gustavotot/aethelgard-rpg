@@ -11,6 +11,7 @@ import {
   Languages,
   LayoutGrid,
   X,
+  Skull,
 } from 'lucide-react';
 import { SheetSectionId } from '../types/rpg';
 
@@ -75,6 +76,12 @@ export const SHEET_SECTIONS: SectionMeta[] = [
     label: 'Prof. & Languages',
     upperLabel: 'PROFICIENCIES & LANGUAGES',
     icon: Languages,
+  },
+  {
+    id: 'conditions',
+    label: 'Conditions',
+    upperLabel: 'CONDITIONS',
+    icon: Skull,
   },
 ];
 

@@ -470,7 +470,8 @@ export type SheetSectionId =
   | 'features'
   | 'notes'
   | 'about'
-  | 'proficiencies';
+  | 'proficiencies'
+  | 'conditions';
 
 export type RollMode = 'normal' | 'advantage' | 'disadvantage';
 
